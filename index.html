@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ダンおに波形解析ツール</title>
+  <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+  <div id="container">
+    <div id="left-pane">
+      <h1>ダンおに波形解析ツール</h1>
+      <div class="row">
+        <label>カーソル位置</label>
+        <div id="cursor_time">N/A</div>
+      </div>
+      <div class="row">
+        <label>フレーム</label>
+        <div id="cursor">N/A</div>
+      </div>
+      <div class="row">
+        <label>ズーム</label>
+        <input type="range" id="zoom" min="1" max="16" value="1">
+      </div>
+      <div class="row">
+        <label>Blank Frame <span title="ダンおに本体で指定しているblankFrameの値を設定します。
+指定していない場合のデフォルト値は200です。">[?]</span></label>
+        <input type="text" id="blank_frame" value="">
+      </div>
+      <div class="row">
+        <label>オフセット <span title="フレーム計算時のオフセットを設定します。
+画面上でぴったり合わせたのに譜面に対して曲が遅れる(Slowが出る)場合はプラス方向に、
+早い(Fastが出る)場合はマイナス方向に設定します。">[?]</span></label>
+        <input type="text" id="offset" value="">
+      </div>
+
+      <div class="row" style="margin-top: 1rem;">
+        <label>音量</label>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+      </div>
+      <div class="row">
+        <label>再生速度</label>
+        <input type="range" id="playback_rate" min="0.1" max="1" step="0.1" value="1">
+      </div>
+      <div class="row">
+        <label>Adjustment <span title="再生ヘッドの表示位置を調整します。
+曲が遅れて聞こえる場合はプラス方向に、早い場合はマイナス方向に設定します。">[?]</span></label>
+        <input type="text" id="adjustment" value="">
+      </div>
+      <div class="row">
+        <label> </label>
+        <div>
+          <input type="button" id="play" value="再生/停止">
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 1rem;">
+        <label>グリッド表示</label>
+        <div><input type="checkbox" id="grid_enable"></div>
+      </div>
+      <div class="row">
+        <label>Start Number</label>
+        <input type="text" id="start_number" value="">
+      </div>
+      <div class="row">
+        <label>BPM</label>
+        <input type="text" id="bpm" value="">
+      </div>
+      <div class="row">
+        <label>キー</label>
+        <input type="text" id="key" value="5">
+      </div>
+      <div class="row">
+        <label> </label>
+        <div>
+          <input type="button" id="save" value="saveコピー">
+          <span id="save_result">OK</span>
+        </div>
+      </div>
+
+      <div>
+        <h2>操作説明</h2>
+        <ul>
+          <li>右側に曲ファイルをドロップ</li>
+          <li>ダブルクリックでStart Number指定</li>
+          <li>グリッドをドラッグしてBPMを調整</li>
+          <li>Ctrl+マウスホイールで拡大縮小</li>
+          <li>Enterで再生切り替え</li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        <a href="https://github.com/suzme/danoni-waveform">GitHub</a> /
+        <a href="thirdparty_license.txt">ライセンス表示</a> /
+        Ver.<span id="version"></span>
+      </div>
+    </div>
+    <div id="right-pane">
+      <div id="right-pane-child" class="drop-area">ここにオーディオファイルをドロップ</div>
+      <canvas id="main-canvas"></canvas>
+      <canvas id="cursor-canvas"></canvas>
+    </div>
+  </div>
+  <script type="module" src="./src/script.js"></script>
+</body>
+</html>
