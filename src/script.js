@@ -1,6 +1,6 @@
 import FFT from 'fft.js';
 
-const version = '0.01';
+const version = '0.02';
 const fft_size = 1024;
 let zoom = 1;
 let begin_frame = 0;
@@ -314,7 +314,12 @@ async function loadAudio(file) {
   begin_frame = 0;
   sample_rate = audio.buffer.sampleRate;
 
+  right_pane_child.textContent = '合成中...';
+  await dom_repaint();
   wav = await mix_monaural(audio.buffer);
+
+  right_pane_child.textContent = '解析中...';
+  await dom_repaint();
   await generate_spectrogram();
   done = true;
 
@@ -324,12 +329,8 @@ async function loadAudio(file) {
 // モノラルに合成
 async function mix_monaural(buffer) {
   const all = Array(buffer.numberOfChannels).fill(0).map((_, i) => buffer.getChannelData(i));
-  const mono = Array(buffer.length);
+  const mono = new Float32Array(buffer.length);
   for (let i = 0; i < mono.length; i++) {
-    if (i % 1000000 == 0) {
-      right_pane_child.textContent = `合成中... ${(i / mono.length * 100).toFixed(1)}%`;
-      await dom_repaint();
-    }
     mono[i] = 0;
     for (let ch = 0; ch < all.length; ch++) {
       mono[i] += all[ch][i];
@@ -349,30 +350,50 @@ async function generate_spectrogram() {
   const ctx = offscreen_ctx;
   offscreen.height = len;
   ctx.clearRect(0, 0, offscreen.width, offscreen.height);
+  const image_data = ctx.createImageData(offscreen.width, offscreen.height);
 
   for (let frame = 0; frame < len; frame++) {
-    if (frame % 100 == 0) {
-      right_pane_child.textContent = `解析中... ${(frame / len * 100).toFixed(1)}%`;
-      await dom_repaint();
-    }
-
     const begin = frame * Math.floor(sample_rate / 60) - fft_size / 2;
     const input = new Array(fft_size);
 
     for (let i = 0; i < fft_size; i++) {
-      input[i] = wav[begin + i] * window_arr[i];
+      input[i] = wav[begin + i] ?? 0 * window_arr[i];
     }
 
     fft.realTransform(comp, input);
     fft.completeSpectrum(comp);
 
-    for (let j = 0; j < fft_size / 2; j += 2) {
-      const abs = Math.sqrt(comp[2*j] * comp[2*j] + comp[2*j+1] * comp[2*j+1]);
+    for (let i = 0; i < fft_size / 2; i += 2) {
+      const abs = Math.sqrt(comp[i * 2] * comp[i * 2] + comp[i * 2 + 1] * comp[i * 2 + 1]);
       const val = Math.max(0, (20 * Math.log10(abs + 1e-8) + 80) / 80);
-      ctx.fillStyle = `hsl(${(1 - val) * 240}, 100%, 50%)`;
-      ctx.fillRect(j / 2, frame, 1, 1);
+      const j = (frame * fft_size / 2 + i) * 2;
+
+      let r, g, b;
+      if (val < 0.25) {
+        r = 0;
+        g = val * 255 / 0.25;
+        b = 255;
+      } else if (val < 0.5) {
+        r = 0;
+        g = 255;
+        b = 255 - (val - 0.25) * 255 / 0.25;
+      } else if (val < 0.75) {
+        r = (val - 0.5) * 255 / 0.25;
+        g = 255;
+        b = 0;
+      } else {
+        r = 255;
+        g = 255 - (val - 0.75) * 255 / 0.25;
+        b = 0;
+      }
+
+      image_data.data[j + 0] = r;
+      image_data.data[j + 1] = g;
+      image_data.data[j + 2] = b;
+      image_data.data[j + 3] = 255;
     }
   }
+  ctx.putImageData(image_data, 0, 0);
 }
 
 // 窓関数
