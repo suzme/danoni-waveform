@@ -10,6 +10,7 @@ let cursor = 0;
 let grid = [];
 let grid_drag_begin = -1;
 let done = false;
+let draw_lines_request_id = 0;
 
 const scrollbar = {
   x: 0,
@@ -507,7 +508,10 @@ function draw_lines() {
     const y = frameToY(play_time * 60);
     ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
     ctx.fillRect(0, y, canvas.width - scrollbar.width, 1);
-    requestAnimationFrame(draw_lines);
+    if (draw_lines_request_id !== 0) {
+      cancelAnimationFrame(draw_lines_request_id);
+    }
+    draw_lines_request_id = requestAnimationFrame(draw_lines);
   }
 
   // カーソル
@@ -599,6 +603,10 @@ function play_stop() {
       console.log(e);
       audio.source = null;
     }
+  }
+  if (draw_lines_request_id !== 0) {
+    cancelAnimationFrame(draw_lines_request_id);
+    draw_lines_request_id = 0;
   }
   audio.playing = false;
 }
