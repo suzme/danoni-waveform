@@ -519,7 +519,7 @@ function draw_lines() {
   const sec = String(Math.floor(cursor / 60 - min * 60)).padStart(2, '0');
   const ms = String(Math.floor((cursor - min * 3600 - sec * 60) * 1000 / 60)).padStart(3, '0');
   document.getElementById('cursor_time').textContent = `${min}:${sec}.${ms}`;
-  document.getElementById('cursor').textContent = (cursor + settings.blank_frame + settings.offset).toFixed(1);
+  document.getElementById('cursor').textContent = (cursor + settings.blank_frame).toFixed(1);
 }
 
 // グリッド用の配列作成
@@ -550,11 +550,11 @@ async function dom_repaint(resolve) {
   座標計算
 */
 function frameToY(frame) {
-  return (frame - begin_frame) * zoom;
+  return (frame - begin_frame - settings.offset) * zoom;
 }
 
 function yToFrame(y) {
-  return y / zoom + begin_frame;
+  return y / zoom + begin_frame + settings.offset;
 }
 
 /*
