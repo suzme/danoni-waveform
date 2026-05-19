@@ -1,6 +1,6 @@
 import FFT from 'fft.js';
 
-const version = '0.02';
+const version = '0.03';
 const fft_size = 1024;
 let zoom = 1;
 let begin_frame = 0;
